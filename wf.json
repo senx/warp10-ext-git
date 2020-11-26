@@ -1,0 +1,15 @@
+{
+  "type": "ext",
+  "group": "io.warp10",
+  "artifact": "warp10-ext-git",
+  "version": "0.0.0",
+  "description": "WarpScript™ Git Extension",
+  "author": "SenX",
+  "email": "contact@senx.io",
+  "license": "Commercial",
+  "git": "https://gitlab.com/senx/warp10-ext-git",
+  "repoUrl": "https://dl.bintray.com/myCompany/maven/",
+  "tags": [
+    "git"
+  ]
+}
