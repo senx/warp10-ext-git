@@ -1,0 +1,72 @@
+//
+//   Copyright 2020 SenX S.A.S.
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
+{
+  'name' 'GITSTORE'
+  'since' '2.8.0'
+  'deprecated' ''
+  'deleted' ''
+  'version' 'all'
+  'tags' [ 'extensions' ]
+  'ext' 'io.warp10.ext.git.GitWarpScriptExtension'
+  'desc' 
+<'
+The `GITSTORE` function stores some content in a file in a git repository accessible by the extension. The store operation will only succeed if the execution environment currently contains capabilities for the target repository.
+'>
+
+  'sig' [ 
+    [
+      [ 
+        {
+          'message' 'message:STRING'
+          'content' 'content:STRING'
+          'repo' 'repo:STRING'
+          'path' 'path:STRING'
+        }
+      ]  [ 'rev:STRING' ] ] 
+  ]
+
+  'params' {
+    'message' 'The commit message to associated with the file creation or modification.'
+    'content' 'The `STRING` or `BYTES` content to store under `path` in the repository. If `content` is of type `STRING`, the `UTF-8` charset will be used for converting it to `BYTES`.'
+    'repo' 'Name of git repository to access.'
+    'path' 'Path relative to `repo`. If the current `git.subdir` capability is set, the path will be relative to that subdirectory in `repo`.'
+    'rev' 'Revision string of the commit.'
+  }
+
+  'related' [ 'GITLOAD' 'GITRM' 'GITFIND' ]
+  'examples' [
+<'
+'TOKEN_WITH_GIT_CAPABILITIES' CAPADD
+'Hello, Git!' 'content' STORE
+{
+  'content' $content
+  'message' 'My first commit'
+  'repo' 'myrepo'
+  'path' 'hello/git.txt'
+}
+GITSTORE
+'>'
+  ]
+
+  'conf' [ 'git.root' ]
+} '.info' STORE
+<%
+  $.info INFO
+  <%
+    'GITSTORE' EVAL
+  %> <% %> <% %> TRY
+%>
