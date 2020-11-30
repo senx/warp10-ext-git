@@ -33,11 +33,41 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
    */
   public static final String CONF_ROOT = "git.root";
 
-  public static final String GITCOMMIT = "GITCOMMIT";
+  public static final String GITLOAD = "GITLOAD";
+  public static final String GITSTORE = "GITSTORE";
+  public static final String GITRM = "GITRM";
+  public static final String GITFIND = "GITFIND";
 
+  /**
+   * Repository the token can access
+   */
   public static final String CAP_GITREPO = "git.repo";
+  /**
+   * The name to use for commits
+   */
   public static final String CAP_GITNAME = "git.name";
+  /**
+   * The email address to use for commits
+   */
   public static final String CAP_GITEMAIL = "git.email";
+
+  /**
+   * The subdirectory of 'git.repo' the token can access
+   */
+  public static final String CAP_GITSUBDIR = "git.subdir";
+
+  /**
+   * If this capability is present, any operation which
+   * modifies the repository will not be allowed, access
+   * will be (r)ead (o)nly (ro).
+   */
+  public static final String CAP_GITRO = "git.ro";
+
+  public static final String PARAM_REPO = "repo";
+  public static final String PARAM_MESSAGE = "message";
+  public static final String PARAM_REGEXP = "regexp";
+  public static final String PARAM_PATH = "path";
+  public static final String PARAM_CONTENT = "content";
 
   private static final File ROOT;
 
@@ -57,7 +87,10 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
 
     functions = new HashMap<String,Object>();
 
-    functions.put(GITCOMMIT, new GITCOMMIT(GITCOMMIT));
+    functions.put(GITLOAD, new GITLOAD(GITLOAD));
+    functions.put(GITSTORE, new GITSTORE(GITSTORE));
+    functions.put(GITRM, new GITRM(GITRM));
+    functions.put(GITFIND, new GITFIND(GITFIND));
   }
   @Override
   public Map<String, Object> getFunctions() {
