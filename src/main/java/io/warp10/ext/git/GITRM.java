@@ -17,16 +17,13 @@
 package io.warp10.ext.git;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.EmptyCommitException;
+import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import io.warp10.script.NamedWarpScriptFunction;
@@ -35,9 +32,9 @@ import io.warp10.script.WarpScriptStack;
 import io.warp10.script.WarpScriptStackFunction;
 import io.warp10.script.ext.capabilities.Capabilities;;
 
-public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStackFunction {
+public class GITRM extends NamedWarpScriptFunction implements WarpScriptStackFunction {
 
-  public GITSTORE(String name) {
+  public GITRM(String name) {
     super(name);
   }
 
@@ -52,17 +49,20 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
 
     Map<Object,Object> params = (Map<Object,Object>) top;
 
-    if (!(params.get(GitWarpScriptExtension.PARAM_MESSAGE) instanceof String)) {
-      throw new WarpScriptException(getName() + " expects a commit message under key '" + GitWarpScriptExtension.PARAM_MESSAGE + "'.");
+    List<String> pathes = new ArrayList<String>();
+
+    if (params.get(GitWarpScriptExtension.PARAM_PATH) instanceof String) {
+      pathes.add((String) params.get(GitWarpScriptExtension.PARAM_PATH));
+    } else if (params.get(GitWarpScriptExtension.PARAM_PATH) instanceof List) {
+      for (Object elt: (List) params.get(GitWarpScriptExtension.PARAM_PATH)) {
+        if (!(elt instanceof String)) {
+          throw new WarpScriptException(getName() + " key '" + GitWarpScriptExtension.PARAM_PATH + "' should point to a path or a list thereof.");
+        }
+        pathes.add((String) elt);
+      }
+    } else {
+      throw new WarpScriptException(getName() + " key '" + GitWarpScriptExtension.PARAM_PATH + "' should point to a path or a list thereof.");
     }
-
-    String message = (String) params.get(GitWarpScriptExtension.PARAM_MESSAGE);
-
-    if (!(params.get(GitWarpScriptExtension.PARAM_PATH) instanceof String)) {
-      throw new WarpScriptException(getName() + " unset path under key '" + GitWarpScriptExtension.PARAM_PATH + "'.");
-    }
-
-    String path = (String) params.get(GitWarpScriptExtension.PARAM_PATH);
 
     if (!(params.get(GitWarpScriptExtension.PARAM_REPO) instanceof String)) {
       throw new WarpScriptException(getName() + " unset repository under key '" + GitWarpScriptExtension.PARAM_REPO + "'.");
@@ -70,15 +70,11 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
 
     String repo = (String) params.get(GitWarpScriptExtension.PARAM_REPO);
 
-    byte[] content = null;
-
-    if (params.get(GitWarpScriptExtension.PARAM_CONTENT) instanceof String) {
-      content = ((String) params.get(GitWarpScriptExtension.PARAM_CONTENT)).getBytes(StandardCharsets.UTF_8);
-    } else if (params.get(GitWarpScriptExtension.PARAM_CONTENT) instanceof byte[]) {
-      content = (byte[]) params.get(GitWarpScriptExtension.PARAM_CONTENT);
-    } else {
-      throw new WarpScriptException(getName() + " can only store content of type STRING or BYTES, specified under key '" + GitWarpScriptExtension.PARAM_CONTENT + "'.");
+    if (!(params.get(GitWarpScriptExtension.PARAM_MESSAGE) instanceof String)) {
+      throw new WarpScriptException(getName() + " expects a commit message under key '" + GitWarpScriptExtension.PARAM_MESSAGE + "'.");
     }
+
+    String message = (String) params.get(GitWarpScriptExtension.PARAM_MESSAGE);
 
     //
     // Check that the root is configured and that the stack has the correct capability
@@ -101,49 +97,23 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       throw new WarpScriptException(getName() + " no right to modify repository '" + repo + "'.");
     }
 
-    //
-    // Add git.subdir prefix to path if defined
-    //
-
-    if (null != capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR)) {
-      path = capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR) + "/" + path;
-    }
-
-    //
-    // Create the directories needed for 'path' and store 'content' in path
-    //
-
-    if (path.contains("/../") || path.contains("/./") || path.startsWith("./") || path.startsWith("../")) {
-      throw new WarpScriptException(getName() + " invalid path.");
-    }
-
-    File repodir = new File(GitWarpScriptExtension.getRoot(), repo);
-    File target = new File(repodir, path);
+    String subdir = capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR);
 
     Git git = null;
 
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
 
-      if (!target.exists()) {
-        try {
-          FileUtils.forceMkdir(target.getParentFile());
-        } catch (IOException ioe) {
-          throw new WarpScriptException(getName() + " error creating path.", ioe);
+      RmCommand rm = git.rm();
+      for (String path: pathes) {
+        if (null == subdir) {
+          rm.addFilepattern(path);
+        } else {
+          rm.addFilepattern(subdir + "/" + path);
         }
-      } else if (target.exists() && target.isDirectory()) {
-        throw new WarpScriptException(getName() + " path points to a directory.");
       }
 
-      try {
-        FileUtils.writeByteArrayToFile(target, content);
-      } catch (IOException ioe) {
-        throw new WarpScriptException(getName() + " error writing file content.", ioe);
-      }
-
-      AddCommand add = git.add();
-      add.addFilepattern(path);
-      add.call();
+      rm.call();
 
       CommitCommand commit = git.commit();
       // Extract author and email from capabilities gituser and gitemail if set
@@ -151,11 +121,8 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       commit.setAllowEmpty(false);
       commit.setCommitter("warp10-ext-git", "contact@senx.io");
       commit.setMessage(message);
-
       RevCommit rev = commit.call();
       stack.push(rev.getId().name());
-    } catch (EmptyCommitException ece) {
-      stack.push(null);
     } catch (Exception e) {
       // Do not include original exception so we do not leak internal path
       throw new WarpScriptException(getName() + " error opening Git repository '" + repo + "'.");

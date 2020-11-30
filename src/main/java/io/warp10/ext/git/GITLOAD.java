@@ -17,17 +17,18 @@
 package io.warp10.ext.git;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.EmptyCommitException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 import io.warp10.script.NamedWarpScriptFunction;
 import io.warp10.script.WarpScriptException;
@@ -35,9 +36,9 @@ import io.warp10.script.WarpScriptStack;
 import io.warp10.script.WarpScriptStackFunction;
 import io.warp10.script.ext.capabilities.Capabilities;;
 
-public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStackFunction {
+public class GITLOAD extends NamedWarpScriptFunction implements WarpScriptStackFunction {
 
-  public GITSTORE(String name) {
+  public GITLOAD(String name) {
     super(name);
   }
 
@@ -52,12 +53,6 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
 
     Map<Object,Object> params = (Map<Object,Object>) top;
 
-    if (!(params.get(GitWarpScriptExtension.PARAM_MESSAGE) instanceof String)) {
-      throw new WarpScriptException(getName() + " expects a commit message under key '" + GitWarpScriptExtension.PARAM_MESSAGE + "'.");
-    }
-
-    String message = (String) params.get(GitWarpScriptExtension.PARAM_MESSAGE);
-
     if (!(params.get(GitWarpScriptExtension.PARAM_PATH) instanceof String)) {
       throw new WarpScriptException(getName() + " unset path under key '" + GitWarpScriptExtension.PARAM_PATH + "'.");
     }
@@ -69,16 +64,6 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
     }
 
     String repo = (String) params.get(GitWarpScriptExtension.PARAM_REPO);
-
-    byte[] content = null;
-
-    if (params.get(GitWarpScriptExtension.PARAM_CONTENT) instanceof String) {
-      content = ((String) params.get(GitWarpScriptExtension.PARAM_CONTENT)).getBytes(StandardCharsets.UTF_8);
-    } else if (params.get(GitWarpScriptExtension.PARAM_CONTENT) instanceof byte[]) {
-      content = (byte[]) params.get(GitWarpScriptExtension.PARAM_CONTENT);
-    } else {
-      throw new WarpScriptException(getName() + " can only store content of type STRING or BYTES, specified under key '" + GitWarpScriptExtension.PARAM_CONTENT + "'.");
-    }
 
     //
     // Check that the root is configured and that the stack has the correct capability
@@ -97,21 +82,15 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       throw new WarpScriptException(getName() + " missing or invalid '" + GitWarpScriptExtension.CAP_GITREPO + "' capability.");
     }
 
-    if (null != capabilities.get(GitWarpScriptExtension.CAP_GITRO)) {
-      throw new WarpScriptException(getName() + " no right to modify repository '" + repo + "'.");
-    }
-
     //
     // Add git.subdir prefix to path if defined
     //
 
+    String rawpath = path;
+
     if (null != capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR)) {
       path = capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR) + "/" + path;
     }
-
-    //
-    // Create the directories needed for 'path' and store 'content' in path
-    //
 
     if (path.contains("/../") || path.contains("/./") || path.startsWith("./") || path.startsWith("../")) {
       throw new WarpScriptException(getName() + " invalid path.");
@@ -120,42 +99,38 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
     File repodir = new File(GitWarpScriptExtension.getRoot(), repo);
     File target = new File(repodir, path);
 
+//    if (!target.exists() || !target.isFile() || ".git".equals(path)) {
+//      throw new WarpScriptException("Invalid path '" + rawpath + "'.");
+//    }
+
     Git git = null;
 
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
 
-      if (!target.exists()) {
-        try {
-          FileUtils.forceMkdir(target.getParentFile());
-        } catch (IOException ioe) {
-          throw new WarpScriptException(getName() + " error creating path.", ioe);
-        }
-      } else if (target.exists() && target.isDirectory()) {
-        throw new WarpScriptException(getName() + " path points to a directory.");
+      // find the HEAD
+      // TODO(hbs): support branches/tags
+      ObjectId lastCommitId = git.getRepository().resolve(Constants.HEAD);
+
+      RevWalk rwalk = new RevWalk(git.getRepository());
+      RevCommit commit = rwalk.parseCommit(lastCommitId);
+      RevTree tree = commit.getTree();
+      TreeWalk twalk = new TreeWalk(git.getRepository());
+      twalk.addTree(tree);
+      twalk.setRecursive(true);
+      twalk.setFilter(PathFilter.create(path));
+
+      if (twalk.next()) {
+        ObjectId objectId = twalk.getObjectId(0);
+        ObjectLoader loader = git.getRepository().open(objectId);
+
+        stack.push(loader.getBytes());
+      } else {
+        stack.push(null);
       }
 
-      try {
-        FileUtils.writeByteArrayToFile(target, content);
-      } catch (IOException ioe) {
-        throw new WarpScriptException(getName() + " error writing file content.", ioe);
-      }
-
-      AddCommand add = git.add();
-      add.addFilepattern(path);
-      add.call();
-
-      CommitCommand commit = git.commit();
-      // Extract author and email from capabilities gituser and gitemail if set
-      commit.setAuthor(capabilities.getOrDefault(GitWarpScriptExtension.CAP_GITNAME, "warp10-ext-git"), capabilities.getOrDefault(GitWarpScriptExtension.CAP_GITEMAIL, "contact@senx.io"));
-      commit.setAllowEmpty(false);
-      commit.setCommitter("warp10-ext-git", "contact@senx.io");
-      commit.setMessage(message);
-
-      RevCommit rev = commit.call();
-      stack.push(rev.getId().name());
-    } catch (EmptyCommitException ece) {
-      stack.push(null);
+      twalk.close();
+      rwalk.dispose();
     } catch (Exception e) {
       // Do not include original exception so we do not leak internal path
       throw new WarpScriptException(getName() + " error opening Git repository '" + repo + "'.");
