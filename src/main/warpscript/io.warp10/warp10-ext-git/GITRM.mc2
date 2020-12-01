@@ -24,7 +24,7 @@
   'ext' 'io.warp10.ext.git.GitWarpScriptExtension'
   'desc' 
 <'
-The `GITRM` removes files from a git repository accessible by the extension. The load operation will only succeed if the execution environment currently contains capabilities for the target repository.
+The `GITRM` removes files from a git repository accessible by the extension. The operation will only succeed if the execution environment currently contains capabilities for the target repository.
 '>
 
   'sig' [ 
@@ -44,7 +44,7 @@ The `GITRM` removes files from a git repository accessible by the extension. The
     'message' 'Commit message for the deletion operation.'
   }
 
-  'related' [ 'GITSTORE' 'GITLOAD' 'GITFIND' ]
+  'related' [ 'GITSTORE' 'GITLOAD' 'GITFIND' 'GITLOG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

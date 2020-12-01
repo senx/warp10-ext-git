@@ -24,7 +24,7 @@
   'ext' 'io.warp10.ext.git.GitWarpScriptExtension'
   'desc' 
 <'
-The `GITFIND` function identifies files which match a provided regular expression from a git repository accessible by the extension. The load operation will only succeed if the execution environment currently contains capabilities for the target repository.
+The `GITFIND` function identifies files which match a provided regular expression from a git repository accessible by the extension. The operation will only succeed if the execution environment currently contains capabilities for the target repository.
 '>
 
   'sig' [ 
@@ -43,7 +43,7 @@ The `GITFIND` function identifies files which match a provided regular expressio
     'files' 'List of relative pathes matching `regexp`.'
   }
 
-  'related' [ 'GITSTORE' 'GITRM' 'GITLOAD' ]
+  'related' [ 'GITSTORE' 'GITRM' 'GITLOAD' 'GITLOG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

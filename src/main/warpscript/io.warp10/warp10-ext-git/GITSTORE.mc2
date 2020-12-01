@@ -47,7 +47,7 @@ The `GITSTORE` function stores some content in a file in a git repository access
     'rev' 'Revision string of the commit.'
   }
 
-  'related' [ 'GITLOAD' 'GITRM' 'GITFIND' ]
+  'related' [ 'GITLOAD' 'GITRM' 'GITFIND' 'GITLOG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

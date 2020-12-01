@@ -33,6 +33,7 @@ The `GITLOAD` function retrieves content stored in a git repository accessible b
         {
           'repo' 'repo:STRING'
           'path' 'path:STRING'
+          'rev' 'rev:STRING'
         }
       ]  [ 'content:BYTES' ] ] 
   ]
@@ -40,10 +41,11 @@ The `GITLOAD` function retrieves content stored in a git repository accessible b
   'params' {
     'repo' 'Name of git repository to access.'
     'path' 'Path relative to `repo`. If the current `git.subdir` capability is set, the path will be relative to that subdirectory in `repo`.'
+    'rev' 'Optional git revision to consider. The default is `HEAD`. `rev` can be a hash, a tag name, or a revision relative to another revision.'
     'content' 'Byte array containing the content of `path` or `NULL` if it was not found.'
   }
 
-  'related' [ 'GITSTORE' 'GITRM' 'GITFIND' ]
+  'related' [ 'GITSTORE' 'GITRM' 'GITFIND' 'GITLOG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD
