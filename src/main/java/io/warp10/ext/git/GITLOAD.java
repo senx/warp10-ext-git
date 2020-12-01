@@ -65,6 +65,12 @@ public class GITLOAD extends NamedWarpScriptFunction implements WarpScriptStackF
 
     String repo = (String) params.get(GitWarpScriptExtension.PARAM_REPO);
 
+    String rev = Constants.HEAD;
+
+    if (params.get(GitWarpScriptExtension.PARAM_REV) instanceof String) {
+      rev = (String) params.get(GitWarpScriptExtension.PARAM_REV);
+    }
+
     //
     // Check that the root is configured and that the stack has the correct capability
     //
@@ -76,6 +82,7 @@ public class GITLOAD extends NamedWarpScriptFunction implements WarpScriptStackF
     //
     // Check that the stack has the right capability
     //
+
     Map<String,String> capabilities = Capabilities.get(stack, (List) null);
 
     if (!repo.equals(capabilities.get(GitWarpScriptExtension.CAP_GITREPO))) {
@@ -108,9 +115,12 @@ public class GITLOAD extends NamedWarpScriptFunction implements WarpScriptStackF
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
 
-      // find the HEAD
-      // TODO(hbs): support branches/tags
-      ObjectId lastCommitId = git.getRepository().resolve(Constants.HEAD);
+      // find the requested revision
+      ObjectId lastCommitId = git.getRepository().resolve(rev);
+
+      if (null == lastCommitId) {
+        throw new WarpScriptException(getName() + " revision '" + rev + "' was not found in repository '" + repo + "'.");
+      }
 
       RevWalk rwalk = new RevWalk(git.getRepository());
       RevCommit commit = rwalk.parseCommit(lastCommitId);
