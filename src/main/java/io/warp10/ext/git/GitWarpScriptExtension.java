@@ -37,6 +37,7 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String GITSTORE = "GITSTORE";
   public static final String GITRM = "GITRM";
   public static final String GITFIND = "GITFIND";
+  public static final String GITLOG = "GITLOG";
 
   /**
    * Repository the token can access
@@ -68,6 +69,17 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String PARAM_REGEXP = "regexp";
   public static final String PARAM_PATH = "path";
   public static final String PARAM_CONTENT = "content";
+  public static final String PARAM_REV = "rev";
+
+  public static final String INFOS_REV = "rev";
+  public static final String INFOS_MESSAGE = "message";
+  public static final String INFOS_AUTHOR_NAME = "author.name";
+  public static final String INFOS_AUTHOR_EMAIL = "author.email";
+  public static final String INFOS_AUTHOR_TIMESTAMP = "author.timestamp";
+  public static final String INFOS_COMMITTER_NAME = "committer.name";
+  public static final String INFOS_COMMITTER_EMAIL = "committer.email";
+  public static final String INFOS_COMMITTER_TIMESTAMP = "committer.timestamp";
+  public static final String INFOS_TYPE = "type";
 
   private static final File ROOT;
 
@@ -91,7 +103,9 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
     functions.put(GITSTORE, new GITSTORE(GITSTORE));
     functions.put(GITRM, new GITRM(GITRM));
     functions.put(GITFIND, new GITFIND(GITFIND));
+    functions.put(GITLOG, new GITLOG(GITLOG));
   }
+
   @Override
   public Map<String, Object> getFunctions() {
     return functions;
