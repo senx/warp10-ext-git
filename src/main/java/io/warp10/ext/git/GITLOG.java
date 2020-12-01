@@ -66,6 +66,23 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
       throw new WarpScriptException(getName() + " key '" + GitWarpScriptExtension.PARAM_PATH + "' should point to a path or a list thereof.");
     }
 
+    Integer count = null;
+    Integer skip = null;
+
+    if (params.get(GitWarpScriptExtension.PARAM_COUNT) instanceof Long) {
+      count = Math.toIntExact(((Long) params.get(GitWarpScriptExtension.PARAM_COUNT)).longValue());
+      if (count < 0) {
+        count = 0;
+      }
+    }
+
+    if (params.get(GitWarpScriptExtension.PARAM_SKIP) instanceof Long) {
+      skip = Math.toIntExact(((Long) params.get(GitWarpScriptExtension.PARAM_SKIP)).longValue());
+      if (skip < 0) {
+        skip = null;
+      }
+    }
+
     if (!(params.get(GitWarpScriptExtension.PARAM_REPO) instanceof String)) {
       throw new WarpScriptException(getName() + " unset repository under key '" + GitWarpScriptExtension.PARAM_REPO + "'.");
     }
@@ -96,6 +113,13 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
       LogCommand log = git.log();
+
+      if (null != count) {
+        log = log.setMaxCount(count);
+      }
+      if (null != skip) {
+        log = log.setSkip(skip);
+      }
 
       for (String path: pathes) {
         if (null == subdir) {

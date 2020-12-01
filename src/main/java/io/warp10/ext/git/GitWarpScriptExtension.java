@@ -70,6 +70,8 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String PARAM_PATH = "path";
   public static final String PARAM_CONTENT = "content";
   public static final String PARAM_REV = "rev";
+  public static final String PARAM_COUNT = "count";
+  public static final String PARAM_SKIP = "skip";
 
   public static final String INFOS_REV = "rev";
   public static final String INFOS_MESSAGE = "message";
