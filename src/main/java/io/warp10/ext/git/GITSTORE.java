@@ -27,6 +27,7 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.EmptyCommitException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import io.warp10.script.NamedWarpScriptFunction;
@@ -153,6 +154,12 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       commit.setMessage(message);
 
       RevCommit rev = commit.call();
+
+      // Attempt to remove the file, we do not need it since it is now under git's responsibility
+      // This might lead to incorrect content being written if another thread is attempting to
+      // write the same file at the same instant, but such a situation could also occur without the
+      // delete operation anyways, so might as well clean up after our own commit.
+      org.eclipse.jgit.util.FileUtils.delete(target, org.eclipse.jgit.util.FileUtils.IGNORE_ERRORS);
       stack.push(rev.getId().name());
     } catch (EmptyCommitException ece) {
       stack.push(null);
