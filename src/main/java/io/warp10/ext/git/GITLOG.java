@@ -24,8 +24,14 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.internal.storage.file.RefDirectory;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevFlag;
+import org.eclipse.jgit.revwalk.RevObject;
+import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import io.warp10.continuum.store.Constants;
 import io.warp10.script.NamedWarpScriptFunction;
@@ -112,6 +118,9 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
 
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
+
+      Map<String,Map<Object,Object>> revs = new LinkedHashMap<String,Map<Object,Object>>();
+
       LogCommand log = git.log();
 
       if (null != count) {
@@ -131,8 +140,6 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
 
       Iterable<RevCommit> commits = log.call();
 
-      List<Object> revs = new ArrayList<Object>();
-
       for (RevCommit commit: commits) {
         Map<Object,Object> infos = new LinkedHashMap<Object,Object>();
 
@@ -150,10 +157,65 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
         infos.put(GitWarpScriptExtension.INFOS_COMMITTER_EMAIL, person.getEmailAddress());
         infos.put(GitWarpScriptExtension.INFOS_COMMITTER_TIMESTAMP, person.getWhen().getTime() * Constants.TIME_UNITS_PER_MS);
 
-        revs.add(infos);
+        revs.put(commit.getName(), infos);
       }
 
-      stack.push(revs);
+      // Retrieve tags
+      List<Ref> tagrefs = git.tagList().call();
+      RevWalk walk = new RevWalk(git.getRepository());
+      for (Ref ref: tagrefs) {
+        RevObject rev = walk.parseAny(ref.getObjectId());
+        if (rev instanceof RevTag) {
+          RevTag rt = (RevTag) rev;
+          Map<Object,Object> infos = new LinkedHashMap<Object,Object>();
+
+          infos.put(GitWarpScriptExtension.INFOS_REV, rt.getName());
+          infos.put(GitWarpScriptExtension.INFOS_MESSAGE, rt.getFullMessage());
+          infos.put(GitWarpScriptExtension.INFOS_TYPE, org.eclipse.jgit.lib.Constants.typeString(rt.getType()));
+          infos.put(GitWarpScriptExtension.INFOS_TAG, rt.getTagName());
+          infos.put(GitWarpScriptExtension.INFOS_TAGGED, rt.getObject().getName());
+
+          PersonIdent person = rt.getTaggerIdent();
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_NAME, person.getName());
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_EMAIL, person.getEmailAddress());
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_TIMESTAMP, person.getWhen().getTime() * Constants.TIME_UNITS_PER_MS);
+
+          // Only store tags for revisions already in 'revs'
+          if (revs.containsKey(rt.getObject().getName())) {
+            revs.put(rt.getName(), infos);
+            infos = revs.get(rt.getObject().getName());
+            List<String> tags = (List<String>) infos.get(GitWarpScriptExtension.INFOS_TAGS);
+            if (null == tags) {
+              tags = new ArrayList<String>();
+              infos.put(GitWarpScriptExtension.INFOS_TAGS, tags);
+            }
+            tags.add(rt.getTagName());
+          }
+        } else if (rev instanceof RevCommit) {
+          RevCommit commit = (RevCommit) rev;
+          Map<Object,Object> infos = new LinkedHashMap<Object,Object>();
+
+          infos.put(GitWarpScriptExtension.INFOS_REV, commit.getName());
+          infos.put(GitWarpScriptExtension.INFOS_MESSAGE, commit.getFullMessage());
+          infos.put(GitWarpScriptExtension.INFOS_TYPE, org.eclipse.jgit.lib.Constants.typeString(commit.getType()));
+
+          PersonIdent person = commit.getAuthorIdent();
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_NAME, person.getName());
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_EMAIL, person.getEmailAddress());
+          infos.put(GitWarpScriptExtension.INFOS_AUTHOR_TIMESTAMP, person.getWhen().getTime() * Constants.TIME_UNITS_PER_MS);
+
+          person = commit.getCommitterIdent();
+          infos.put(GitWarpScriptExtension.INFOS_COMMITTER_NAME, person.getName());
+          infos.put(GitWarpScriptExtension.INFOS_COMMITTER_EMAIL, person.getEmailAddress());
+          infos.put(GitWarpScriptExtension.INFOS_COMMITTER_TIMESTAMP, person.getWhen().getTime() * Constants.TIME_UNITS_PER_MS);
+
+          revs.putIfAbsent(commit.getName(), infos);
+        } else {
+          throw new WarpScriptException(getName() + " encountered an invalid tag reference.");
+        }
+      }
+
+      stack.push(new ArrayList<Object>(revs.values()));
     } catch (Exception e) {
       // Do not include original exception so we do not leak internal path
       throw new WarpScriptException(getName() + " error opening Git repository '" + repo + "'.");
