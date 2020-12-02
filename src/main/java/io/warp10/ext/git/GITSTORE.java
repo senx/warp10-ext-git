@@ -116,7 +116,7 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
     // Create the directories needed for 'path' and store 'content' in path
     //
 
-    if (path.contains("/../") || path.contains("/./") || path.startsWith("./") || path.startsWith("../")) {
+    if (path.contains("/../") || path.contains("/./") || path.startsWith("./") || path.startsWith("../") || path.startsWith("/")) {
       throw new WarpScriptException(getName() + " invalid path.");
     }
 
