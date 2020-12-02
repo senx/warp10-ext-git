@@ -93,7 +93,11 @@ public class GITFIND extends NamedWarpScriptFunction implements WarpScriptStackF
       if (null == filter) {
         filter = subdir + "/.*";
       } else {
-        filter = subdir + "/" + filter;
+        if (filter.startsWith("^")) {
+          filter = "^" + Pattern.quote(subdir) + "/" + filter.substring(1);
+        } else {
+          filter = Pattern.quote(subdir) + "/" + filter;
+        }
       }
     }
 
@@ -103,6 +107,7 @@ public class GITFIND extends NamedWarpScriptFunction implements WarpScriptStackF
 
     try {
       git = Git.open(new File(GitWarpScriptExtension.getRoot(), repo));
+
       // find the HEAD
       ObjectId lastCommitId = git.getRepository().resolve(Constants.HEAD);
 
