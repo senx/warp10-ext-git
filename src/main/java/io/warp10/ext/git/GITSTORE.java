@@ -69,6 +69,8 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       throw new WarpScriptException(getName() + " unset repository under key '" + GitWarpScriptExtension.PARAM_REPO + "'.");
     }
 
+    boolean noworkdir = Boolean.FALSE.equals(params.get(GitWarpScriptExtension.PARAM_WORKDIR));
+
     String repo = (String) params.get(GitWarpScriptExtension.PARAM_REPO);
 
     byte[] content = null;
@@ -159,7 +161,9 @@ public class GITSTORE extends NamedWarpScriptFunction implements WarpScriptStack
       // This might lead to incorrect content being written if another thread is attempting to
       // write the same file at the same instant, but such a situation could also occur without the
       // delete operation anyways, so might as well clean up after our own commit.
-      org.eclipse.jgit.util.FileUtils.delete(target, org.eclipse.jgit.util.FileUtils.IGNORE_ERRORS);
+      if (noworkdir) {
+        org.eclipse.jgit.util.FileUtils.delete(target, org.eclipse.jgit.util.FileUtils.IGNORE_ERRORS);
+      }
       stack.push(rev.getId().name());
     } catch (EmptyCommitException ece) {
       stack.push(null);

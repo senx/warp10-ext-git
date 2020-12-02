@@ -75,6 +75,7 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String PARAM_SKIP = "skip";
   public static final String PARAM_TAG = "tag";
   public static final String PARAM_FORCE = "force";
+  public static final String PARAM_WORKDIR = "workdir";
 
   public static final String INFOS_REV = "rev";
   public static final String INFOS_MESSAGE = "message";
