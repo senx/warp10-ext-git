@@ -38,6 +38,7 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String GITRM = "GITRM";
   public static final String GITFIND = "GITFIND";
   public static final String GITLOG = "GITLOG";
+  public static final String GITTAG = "GITTAG";
 
   /**
    * Repository the token can access
@@ -72,6 +73,8 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String PARAM_REV = "rev";
   public static final String PARAM_COUNT = "count";
   public static final String PARAM_SKIP = "skip";
+  public static final String PARAM_TAG = "tag";
+  public static final String PARAM_FORCE = "force";
 
   public static final String INFOS_REV = "rev";
   public static final String INFOS_MESSAGE = "message";
@@ -82,6 +85,9 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
   public static final String INFOS_COMMITTER_EMAIL = "committer.email";
   public static final String INFOS_COMMITTER_TIMESTAMP = "committer.timestamp";
   public static final String INFOS_TYPE = "type";
+  public static final String INFOS_TAG = "tag";
+  public static final String INFOS_TAGGED = "tagged";
+  public static final String INFOS_TAGS = "tags";
 
   private static final File ROOT;
 
@@ -106,6 +112,7 @@ public class GitWarpScriptExtension extends WarpScriptExtension {
     functions.put(GITRM, new GITRM(GITRM));
     functions.put(GITFIND, new GITFIND(GITFIND));
     functions.put(GITLOG, new GITLOG(GITLOG));
+    functions.put(GITTAG, new GITTAG(GITTAG));
   }
 
   @Override
