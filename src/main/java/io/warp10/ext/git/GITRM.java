@@ -30,7 +30,7 @@ import io.warp10.script.NamedWarpScriptFunction;
 import io.warp10.script.WarpScriptException;
 import io.warp10.script.WarpScriptStack;
 import io.warp10.script.WarpScriptStackFunction;
-import io.warp10.script.ext.capabilities.Capabilities;;
+import io.warp10.warp.sdk.Capabilities;
 
 public class GITRM extends NamedWarpScriptFunction implements WarpScriptStackFunction {
 

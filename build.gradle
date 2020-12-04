@@ -105,7 +105,7 @@ configurations {
 //
 
 dependencies {
-  provided 'io.warp10:warpscript:2.7.1-58-g57bbf18a'
+  provided 'io.warp10:warpscript:2.7.1-86-g6a35f944'
 
   //
   // Insert your dependencies here
