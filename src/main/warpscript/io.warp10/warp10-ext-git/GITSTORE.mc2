@@ -35,6 +35,7 @@ The `GITSTORE` function stores some content in a file in a git repository access
           'content' 'content:STRING'
           'repo' 'repo:STRING'
           'path' 'path:STRING'
+          'workdir' 'workdir:BOOLEAN'
         }
       ]  [ 'rev:STRING' ] ] 
   ]
@@ -44,6 +45,7 @@ The `GITSTORE` function stores some content in a file in a git repository access
     'content' 'The `STRING` or `BYTES` content to store under `path` in the repository. If `content` is of type `STRING`, the `UTF-8` charset will be used for converting it to `BYTES`.'
     'repo' 'Name of git repository to access.'
     'path' 'Path relative to `repo`. If the current `git.subdir` capability is set, the path will be relative to that subdirectory in `repo`.'
+    'workdir' 'If set to `false`, the file at `path` will be removed from the working directory after the commit.'
     'rev' 'Revision string of the commit.'
   }
 
