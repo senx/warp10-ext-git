@@ -1,5 +1,5 @@
 //
-//   Copyright 2020 SenX S.A.S.
+//   Copyright 2020-2021 SenX S.A.S.
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 {
   'name' 'GITFIND'
-  'since' '2.8.0'
+  'since' '2.7.2'
   'deprecated' ''
   'deleted' ''
   'version' 'all'
@@ -43,7 +43,7 @@ The `GITFIND` function identifies files which match a provided regular expressio
     'files' 'List of relative pathes matching `regexp`.'
   }
 
-  'related' [ 'GITSTORE' 'GITRM' 'GITLOAD' 'GITLOG' ]
+  'related' [ 'GITSTORE' 'GITRM' 'GITLOAD' 'GITLOG' 'GITTAG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

@@ -1,5 +1,5 @@
 //
-//   Copyright 2020 SenX S.A.S.
+//   Copyright 2020-2021 SenX S.A.S.
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 {
   'name' 'GITRM'
-  'since' '2.8.0'
+  'since' '2.7.2'
   'deprecated' ''
   'deleted' ''
   'version' 'all'
@@ -44,7 +44,7 @@ The `GITRM` removes files from a git repository accessible by the extension. The
     'message' 'Commit message for the deletion operation.'
   }
 
-  'related' [ 'GITSTORE' 'GITLOAD' 'GITFIND' 'GITLOG' ]
+  'related' [ 'GITSTORE' 'GITLOAD' 'GITFIND' 'GITLOG' 'GITTAG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

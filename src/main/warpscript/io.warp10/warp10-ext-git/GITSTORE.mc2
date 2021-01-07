@@ -1,5 +1,5 @@
 //
-//   Copyright 2020 SenX S.A.S.
+//   Copyright 2020-2021 SenX S.A.S.
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 {
   'name' 'GITSTORE'
-  'since' '2.8.0'
+  'since' '2.7.2'
   'deprecated' ''
   'deleted' ''
   'version' 'all'
@@ -47,7 +47,7 @@ The `GITSTORE` function stores some content in a file in a git repository access
     'rev' 'Revision string of the commit.'
   }
 
-  'related' [ 'GITLOAD' 'GITRM' 'GITFIND' 'GITLOG' ]
+  'related' [ 'GITLOAD' 'GITRM' 'GITFIND' 'GITLOG' 'GITTAG' ]
   'examples' [
 <'
 'TOKEN_WITH_GIT_CAPABILITIES' CAPADD

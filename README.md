@@ -6,15 +6,13 @@ The repositories the functions can interact with must reside in a directory conf
 
 The functions provided by this extension do not aim at implementing all the features of Git, instead they are meant to simply allow a Warp 10 instance to store, load and list files maintained in a Git repository.
 
-The functions rely on the *capability* mechanism introduced in Warp 10 2.8.0, so make sure you run a compatible version of Warp 10 before installing this extension.
+The functions rely on the *capability* mechanism introduced in Warp 10 2.7.2, so make sure you run a compatible version of Warp 10 before installing this extension.
 
 ## Configuration
 
-The extension (and the capabilities extension) must first be declared in the configuration:
+The extension must first be declared in the configuration:
 
 ```
-warpscript.extension.capabilities = io.warp10.script.ext.capabilities.CapabilitiesWarpScriptExtension
-
 warpscript.extension.git = io.warp10.ext.git.GitWarpScriptExtension
 ```
 
@@ -65,3 +63,7 @@ Retrieve data from a file in a repository.
 ### `GITFIND`
 
 Find files matching a regular expression in a repository.
+
+### `GITTAG`
+
+Adds a tag to a repository.
