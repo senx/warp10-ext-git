@@ -1,0 +1,72 @@
+//
+//   Copyright 2021 SenX S.A.S.
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
+{
+  'name' 'GITTAG'
+  'since' '2.7.2'
+  'deprecated' ''
+  'deleted' ''
+  'version' 'all'
+  'tags' [ 'extensions' ]
+  'ext' 'io.warp10.ext.git.GitWarpScriptExtension'
+  'desc' 
+<'
+The `GITTAG` function tags a git repository accessible by the extension. The tag operation will only succeed if the execution environment currently contains capabilities for the target repository.
+'>
+
+  'sig' [ 
+    [
+      [ 
+        {
+          'repo' 'repo:STRING'
+          'rev' 'rev:STRING'
+          'tag' 'tag:STRING'
+          'force' 'force:BOOLEAN'
+          'message' 'message:STRING'
+        }
+      ]  [ 'ref:STRING' ] ] 
+  ]
+
+  'params' {
+    'repo' 'Name of git repository to access.'
+    'rev' 'Optional git revision to consider. The default is `HEAD`. `rev` can be a hash, a tag name, or a revision relative to another revision.'
+    'message' 'Message to attach to the annotated tag.'
+    'tag' 'Name of the tag to attach.'
+    'force' 'Flag indicating whether or not to force the tag if it already exists. Defaults to false.'
+    'ref' 'Name of the created reference.'
+  }
+
+  'related' [ 'GITSTORE' 'GITRM' 'GITFIND' 'GITLOG' 'GITLOAD' ]
+  'examples' [
+<'
+'TOKEN_WITH_GIT_CAPABILITIES' CAPADD
+{
+  'repo' 'myrepo'
+  'tag' 'mytag'
+  'message' 'my message'
+}
+GITTAG
+'>
+  ]
+
+  'conf' [ 'git.root' ]
+} '.info' STORE
+<%
+  $.info INFO
+  <%
+    'GITTAG' EVAL
+  %> <% %> <% %> TRY
+%>
