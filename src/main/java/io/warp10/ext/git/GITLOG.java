@@ -1,5 +1,5 @@
 //
-//   Copyright 2020  SenX S.A.S.
+//   Copyright 2020-2021  SenX S.A.S.
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -24,11 +24,9 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
-import org.eclipse.jgit.internal.storage.file.RefDirectory;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevFlag;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -41,6 +39,8 @@ import io.warp10.script.WarpScriptStackFunction;
 import io.warp10.warp.sdk.Capabilities;
 
 public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFunction {
+
+  private static final GITFIND GITFIND = new GITFIND(GitWarpScriptExtension.GITFIND);
 
   public GITLOG(String name) {
     super(name);
@@ -69,7 +69,15 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
         pathes.add((String) elt);
       }
     } else {
-      throw new WarpScriptException(getName() + " key '" + GitWarpScriptExtension.PARAM_PATH + "' should point to a path or a list thereof.");
+      // Consider all the files/directories at the top of the repo root
+    }
+
+    //
+    // If 'pathes' simply contains the empty path, consider it is empty
+    //
+
+    if (pathes.contains("")) {
+      pathes.remove("");
     }
 
     Integer count = null;
@@ -113,6 +121,19 @@ public class GITLOG extends NamedWarpScriptFunction implements WarpScriptStackFu
     }
 
     String subdir = capabilities.get(GitWarpScriptExtension.CAP_GITSUBDIR);
+
+    //
+    // If 'pathes' is empty, issue a GITFIND first on the same repo
+    //
+
+    if (pathes.isEmpty()) {
+      stack.push(params);
+      GITFIND.apply(stack);
+      List<Object> l = (List<Object>) stack.pop();
+      for (Object o: l) {
+        pathes.add(String.valueOf(o));
+      }
+    }
 
     Git git = null;
 
