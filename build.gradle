@@ -88,10 +88,6 @@ repositories {
     url 'https://dl.bintray.com/senx/maven'
   }
 
-  maven {
-    url 'https://dl.bintray.com/hbs/maven'
-  }
-
   mavenLocal()
 }
 
@@ -105,7 +101,7 @@ configurations {
 //
 
 dependencies {
-  provided 'io.warp10:warpscript:2.7.1-94-g8bc918b9'
+  provided 'io.warp10:warpscript:2.7.5'
 
   //
   // Insert your dependencies here
