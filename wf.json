@@ -2,13 +2,13 @@
   "type": "ext",
   "group": "io.warp10",
   "artifact": "warp10-ext-git",
-  "version": "0.0.0",
-  "description": "WarpScript™ Git Extension",
+  "version": "1.0.0",
+  "description": "WarpScript Git Extension",
   "author": "SenX",
   "email": "contact@senx.io",
-  "license": "Commercial",
+  "license": "Apache-2.0",
   "git": "https://gitlab.com/senx/warp10-ext-git",
-  "repoUrl": "https://dl.bintray.com/myCompany/maven/",
+  "repoUrl": "https://repo.maven.apache.org/maven2",
   "tags": [
     "git"
   ]
