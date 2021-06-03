@@ -61,7 +61,7 @@ The `GITSTORE` function stores some content in a file in a git repository access
   'path' 'hello/git.txt'
 }
 GITSTORE
-'>'
+'>
   ]
 
   'conf' [ 'git.root' ]
